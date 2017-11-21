@@ -12,7 +12,7 @@ def createDataSet():
 # inX为用于分类的输入向量，dataSet为输入的训练样本集，labels为标签向量，k表示用于选择最近邻居的数目
 def classify0(inX, dataSet, labels, k):
 # 距离计算
-    dataSetSize=dataSet.shape[0]    ##return 4
+    dataSetSize=dataSet.shaps[0]    ##return 4
     ##numpy.tile([0,0],(1,2))即将[0,0]二维上复制2次，一维上复制1次，为[[0,0,0,0]]。numpy.tile([0,0],(2))一个参数默认返回一维复制2次，为[0,0,0,0]。numpy.title([3,5],(2,1))为[[3,5],[3,5]]
     diffMat=tile(inX,(dataSetSize,1))-dataSet
     sqDiffMat=diffMat**2
@@ -49,3 +49,14 @@ def file2matrix(filename):
         classLabelVector.append(int(listFromLine[-1])) ##将列表的最后一列添加进去
         index+=1
     return returnMat,classLabelVector
+
+##归一化特征值
+def autoNorm(dataSet):
+    minVals=dataSet.min(0)  ##选取最小值，参数0可以使函数从列中选取值而不是当前行中选取
+    maxVals=dataSet.max(0)  ##选取最大值，参数0可以使函数从列中选取值而不是当前行中选取
+    ranges=maxVals-minVals
+    normDataSet=zeros(shape(dataSet))
+    m=dataSet.shape[0]
+    normDataSet=dataSet-tile(minVals,(m,1))
+    normDataSet=normDataSet/tile(ranges,(m,1))
+    return normDataSet,ranges,minVals
