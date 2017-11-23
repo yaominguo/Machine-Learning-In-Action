@@ -12,7 +12,7 @@ def createDataSet():
 # inX为用于分类的输入向量，dataSet为输入的训练样本集，labels为标签向量，k表示用于选择最近邻居的数目
 def classify0(inX, dataSet, labels, k):
 # 距离计算
-    dataSetSize=dataSet.shaps[0]    ##return 4
+    dataSetSize=dataSet.shape[0]    ##return 4
     ##numpy.tile([0,0],(1,2))即将[0,0]二维上复制2次，一维上复制1次，为[[0,0,0,0]]。numpy.tile([0,0],(2))一个参数默认返回一维复制2次，为[0,0,0,0]。numpy.title([3,5],(2,1))为[[3,5],[3,5]]
     diffMat=tile(inX,(dataSetSize,1))-dataSet
     sqDiffMat=diffMat**2
@@ -29,7 +29,7 @@ def classify0(inX, dataSet, labels, k):
         classCount[voteIlabel] = classCount.get(voteIlabel,0)+1
  # 排序
     sortedClassCount = sorted(classCount.iteritems(),key=operator.itemgetter(1),reverse=True)##reverse=False为升序排序；reverse=True为降序排序
-    return sortedClassCount
+    return sortedClassCount[0][0]
 
 
 ###运行>>>kNN.classify0([0,0],group,labels,3)   结果为 'B'。  ###
@@ -60,3 +60,50 @@ def autoNorm(dataSet):
     normDataSet=dataSet-tile(minVals,(m,1))
     normDataSet=normDataSet/tile(ranges,(m,1))
     return normDataSet,ranges,minVals
+##测试错误率
+def datingClassTest():
+    hoRatio=0.10
+    datingDataMat,datingLabels=file2matrix('datingTestSet.txt')##读取文件数据
+    normMat,ranges,minVals=autoNorm(datingDataMat) ##转换为归一化特征值
+    m=normMat.shape[0]
+    numTestVecs=int(m*hoRatio)
+    errorCount=0.0
+    for i in range(numTestVecs):
+        classifierResult=classify0(normMat[i,:], normMat[numTestVecs:m,:],datingLabels[numTestVecs:m],3)
+        print "the classifier came back with: %d, the real answer is: %d"\
+              % (classifierResult, datingLabels[i])
+        if(classifierResult != datingLabels[i]):
+            errorCount+=1.0
+    print "the total error rate is: %f" % (errorCount/float(numTestVecs)) ##返回错误率为0.050000,约为5%
+
+
+##预测函数
+def classifyPerson():
+    resultList=['not at all', 'in small doses', 'in large doses']
+    percentTats=float(raw_input("Percentage of time spent playing video games?"))
+    ffMiles=float(raw_input("Frequent flier miles earned per year?"))
+    iceCream=float(raw_input("Liters of ice cream consumed per year?"))
+    datingDataMat,datingLabels=file2matrix('datingTestSet.txt')
+    normMat,ranges,minVals = autoNorm(datingDataMat)
+    inArr=array([ffMiles,percentTats,iceCream])
+    classifierResult=classify0((inArr-minVals)/ranges,normMat,datingLabels,3)
+    print "You will probable like this person: ",resultList[classifierResult-1]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
