@@ -1,5 +1,6 @@
 # coding=utf-8
 from math import log
+import operator
 
 def createDataSet():
     dataSet=[[1,1,'yes'],[1,1,'yes'],[1,0,'no'],[0,1,'no'],[0,1,'no']]
@@ -50,3 +51,30 @@ def chooseBestFeatureToSplit(dataSet):
             bestInfoGain=infoGain
             bestFeature=i
     return  bestFeature
+
+def majorityCnt(classList):
+    classCount={}
+    for vote in classList:
+        if vote not in classCount.key():
+            classCount[vote]=0
+            classCount[vote]+=1
+    sortedClassCount=sorted(classCount.iteritems(),key=operator.itemgetter(1),reverse=True)
+    return sortedClassCount[0][0]
+
+##创建树的函数代码
+def createTree(dataSet,labels):
+    classList=[example[-1] for example in dataSet] #创建列表变量，包含了数据集的所有类标签
+    if classList.count(classList[0])==len(classList): #所有类标签完全相同则直接返回该类标签
+        return classList[0]
+    if len(dataSet[0])==1: #遍历完所有特征仍不能将数据集划分成仅包含唯一类别的分组则返回出现次数最多的类标签
+        return majorityCnt(classList)
+    bestFeat=chooseBestFeatureToSplit(dataSet)
+    bestFeatLabel=labels[bestFeat]
+    myTree={bestFeatLabel:{}}
+    del(labels[bestFeat])
+    featValues=[example[bestFeat] for example in dataSet] #得到列表包含的所有属性值
+    uniqueVals=set(featValues)
+    for value in uniqueVals:
+        subLabels=labels[:]
+        myTree[bestFeatLabel][value]=createTree(splitDataSet(dataSet,bestFeat,value),subLabels)
+    return myTree
