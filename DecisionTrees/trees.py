@@ -2,6 +2,11 @@
 from math import log
 import operator
 
+###这里的决策树算法称为ID3，它是一个号的算法但是并不完美，因为它无法直接处理数值型数据。
+###尽管可以通过量化的方法将数值型数据转化为标称型数值，但是如果存在太多的特征划分，就会面临其他问题。
+
+
+
 def createDataSet():
     dataSet=[[1,1,'yes'],[1,1,'yes'],[1,0,'no'],[0,1,'no'],[0,1,'no']]
     labels=['no surfacing','flippers']
@@ -78,3 +83,26 @@ def createTree(dataSet,labels):
         subLabels=labels[:]
         myTree[bestFeatLabel][value]=createTree(splitDataSet(dataSet,bestFeat,value),subLabels)
     return myTree
+
+##使用决策树的分类函数
+def classify(inputTree,featLabels,testVec):
+    firstStr=inputTree.keys()[0]
+    secondDict=inputTree[firstStr]
+    featIndex=featLabels.index(firstStr) #查找当前列表中第一个匹配firstStr变量的元素
+    for key in secondDict.keys():
+        if testVec[featIndex]==key: #比较testVec变量中的值与树节点的值
+            if type(secondDict[key]).__name__=='dict':
+                classLabel=classify(secondDict[key],featLabels,testVec)
+            else: classLabel=secondDict[key]
+    return classLabel
+
+##使用pickle模块存储决策树
+def storeTree(inputTree,filename):
+    import pickle
+    fw=open(filename,'w')
+    pickle.dump(inputTree,fw)
+    fw.close()
+def grabTree(filename):
+    import pickle
+    fr=open(filename)
+    return pickle.load(fr)
