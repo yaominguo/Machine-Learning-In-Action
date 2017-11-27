@@ -20,13 +20,21 @@ def createVocabList(dataSet):
         vocabSet=vocabSet|set(document) #将每篇文档返回的新词集合添加到该集合中，‘|’为求两个集合的并集
     return list(vocabSet)
 
-##将词组列表转换为文档向量列表
+##将词组列表转换为文档向量列表(词集模型）
 def setOfWords2Vec(vocabList,inputSet):
     returnVec=[0]*len(vocabList) #创建一个和词汇表等长的向量，元素都设为0
     for word in inputSet: #遍历文档所有单词
         if word in vocabList: #如果出现了词汇表中的单词
             returnVec[vocabList.index(word)]=1 #则将输出的文档向量中的对应值设为1
         else: print "The word: %s is not in my Vocabulary!" % word
+
+    return returnVec
+##词袋模型
+def bageOfWords2VecMN(vocabList,inputSet):
+    returnVec=[0]*len(vocabList)
+    for word in inputSet:
+        if word in vocabList:
+            returnVec[vocabList.index(word)]+=1
     return returnVec
 
 ##朴素贝叶斯分类器训练函数
@@ -70,3 +78,39 @@ def testingNB():
     testEntry=['stupid','garbage']
     thisDoc=array(setOfWords2Vec(myVocabList,testEntry))
     print testEntry, 'classified as: ', classifyNB(thisDoc,p0V,p1V,pAb)
+
+
+##文件解析及完整的垃圾邮件测试函数
+def textParse(bigString):
+    import re
+    listOfTokens=re.split(r'\W*', bigString) #解析为字符串列表
+    return [tok.lower() for tok in listOfTokens if len(tok)>2] #转换为小写并且去掉少于两位的字符串
+def spamTest():
+    docList=[]; classList=[]; fullText=[]
+    for i in range(1,26): #导入并解析文本文件为词列表
+        wordList=textParse(open('src/email/spam/%d.txt' % i).read())
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(1)
+        wordList=textParse(open('src/email/ham/%d.txt' % i).read())
+        docList.append(wordList)
+        fullText.extend(wordList)
+        classList.append(0)
+    vocabList=createVocabList(docList)
+    trainingSet=range(50); testSet=[] #构建训练集和测试集，集合中的邮件都是随机选取。trainingSet是0到49的整数列表，因为共有50个邮件文件。
+    for i in range(10): #随机选取10个文件，这种随机选择数据的一部分为训练集，剩余的为测试集的过程叫“留存交叉验证”。
+        randIndex=int(random.uniform(0,len(trainingSet)))
+        testSet.append(trainingSet[randIndex]) #选择出的数字对应的文档被添加到测试集
+        del(trainingSet[randIndex]) #同时从训练集中删除
+    trainMat=[]; trainClasses=[]
+    for docIndex in trainingSet: #遍历训练集的所有文档
+        trainMat.append(setOfWords2Vec(vocabList,docList[docIndex]))#对每封邮件基于词汇表来构建词向量
+        trainClasses.append(classList[docIndex])
+    p0V, p1V, pSpam = trainNB0(array(trainMat),array(trainClasses)) #这些向量用于计算分类所需的概率
+    errorCount=0
+    for docIndex in testSet: #遍历测试集
+        wordVector=setOfWords2Vec(vocabList,docList[docIndex])
+        #对每封邮件进行分类，如果分类错误，则错误数加1，最后给出总的错误百分比
+        if classifyNB(array(wordVector), p0V, p1V, pSpam) !=classList[docIndex]:
+            errorCount+=1
+    print 'The error rate is: ', float(errorCount)/len(testSet)
