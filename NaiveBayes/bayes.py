@@ -2,6 +2,11 @@
 
 from numpy import *
 
+###贝叶斯概率及贝叶斯准则提供了一种利用已知值来估计未知概率的有效方法。
+###可以通过特征之间的条件独立性假设，降低对数据量的需求。独立性假设是指一个词的出现概率并不依赖于文档中的其他词。
+
+
+
 ##创建实验样本
 def loadDataSet():
     postingList=[['my','dog','has','flea','problem','help','please'],
@@ -45,7 +50,7 @@ def trainNB0(trainMatrix,trainCategory):
     p0Num=ones(numWords);p1Num=ones(numWords)
     p0Denom=2.0;p1Denom=2.0
     for i in range(numTrainDocs):  #遍历trainMatrix,一旦（侮辱或正常）词语在某一文档中出现
-        if trainCategory[i]==1:    #则改词对应的个数（p1Num or p0Num）就加1，并且该文档的总次数也加1
+        if trainCategory[i]==1:    #则该词对应的个数（p1Num or p0Num）就加1，并且该文档的总次数也加1
             p1Num+=trainMatrix[i]
             p1Denom+=sum(trainMatrix[i])
         else:
