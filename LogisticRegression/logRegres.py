@@ -30,7 +30,8 @@ def gradAscent(dataMatIn,classLabels): #dataMatIn是二维numpy数组，每列�
 ##画出数据集和Logistic回归最佳拟合直线的函数
 def plotBestFit(wei):
     import matplotlib.pyplot as plt
-    weights=wei.getA()
+    # weights=wei.getA()
+    weights=wei
     dataMat,labelMat=loadDataSet()
     dataArr=array(dataMat)
     n=shape(dataArr)[0]
@@ -52,12 +53,16 @@ def plotBestFit(wei):
     plt.show()
 
 ##随机梯度上升算法
-def stocGradAscent0(dataMatrix,classLabels):
+def stocGradAscent0(dataMatrix,classLabels, numIter=150):
     m,n=shape(dataMatrix) #跟梯度上升算法对比，这里没有矩阵的转换过程，所有变量的数据类型都是numpy数组
-    alpha=0.01
     weights=ones(n)
-    for i in range(m):
-        h=sigmoid(sum(dataMatrix[i]*weights)) #跟梯度上升算法对比，这里h和error全是数值
-        error=classLabels[i]-h
-        weights=weights+alpha*error*dataMatrix[i]
+    for j in range(numIter):
+        dataIndex=range(m)
+        for i in range(m):
+            alpha=4/(1.0+j+i)+0.01 #alpha每次迭代的时候都会调整，随着迭代不断减少，但永远不会少于0
+            randIndex=int(random.uniform(0,len(dataIndex))) #随机选取样本来更新回归系数，将可以减少周期性的波动。
+            h=sigmoid(sum(dataMatrix[randIndex]*weights)) #跟梯度上升算法对比，这里h和error全是数值
+            error=classLabels[randIndex]-h
+            weights=weights+alpha*error*dataMatrix[randIndex]
+            del(dataIndex[randIndex])
     return weights
