@@ -1,5 +1,13 @@
 # coding=utf-8
 from numpy import *
+
+###Logistic回归的目的是寻找一个非线性函数sigmoid的最佳拟合参数，求解过程可以由最优化算法来来完成。
+###最优化算法中，最常用的就是梯度上升算法，而梯度上升算法又可以简化为随机梯度上升算法。
+###随机梯度上升算法与梯度上升算法的效果相当，但占用更少的计算资源。
+###此外，随机梯度上升算法是在线算法，可以再新数据到来时就完成参数更新，而不需要重新读取整个数据集来进行批处理运算。
+
+
+
 ##Logistic 回归梯度上升优化算法
 def loadDataSet():
     dataMat=[];labelMat=[]
@@ -53,7 +61,7 @@ def plotBestFit(wei):
     plt.show()
 
 ##随机梯度上升算法
-def stocGradAscent0(dataMatrix,classLabels, numIter=150):
+def stocGradAscent1(dataMatrix,classLabels, numIter=150):
     m,n=shape(dataMatrix) #跟梯度上升算法对比，这里没有矩阵的转换过程，所有变量的数据类型都是numpy数组
     weights=ones(n)
     for j in range(numIter):
@@ -66,3 +74,42 @@ def stocGradAscent0(dataMatrix,classLabels, numIter=150):
             weights=weights+alpha*error*dataMatrix[randIndex]
             del(dataIndex[randIndex])
     return weights
+
+##Logistic回归分类函数
+def classifyVector(inX,weights): #以回归系数和特征向量作为输入来计算对应的sigmoid值
+    prob=sigmoid(sum(inX*weights))
+    if prob>0.5:
+        return 1.0
+    else:
+        return 0.0
+def colicTest(): #打开测试集和训练集，并对数据进行格式化处理
+    frTrain=open('src/HorseColicTraining.txt')
+    frTest=open('src/HorseColicTest.txt')
+    trainingSet=[];trainingLabels=[]
+    for line in frTrain.readlines():
+        currLine=line.strip().split('\t')
+        lineArr=[]
+        for i in range(21):
+            lineArr.append(float(currLine[i]))
+        trainingSet.append(lineArr)
+        trainingLabels.append(float(currLine[21]))
+    trainWeights=stocGradAscent1(array(trainingSet),trainingLabels,500)
+    errorCount=0;numTestVec=0.0
+    for line in frTest.readlines():
+        numTestVec+=1.0
+        currLine=line.strip().split('\t')
+        lineArr=[]
+        for i in range(21):
+            lineArr.append(float(currLine[i]))
+        if int(classifyVector(array(lineArr),trainWeights))!=int(currLine[21]):
+            errorCount+=1
+    errorRate=(float(errorCount)/numTestVec)
+    print "the error rate of this test is: %f" % errorRate
+    return errorRate
+def multiTest(): #调用colicTest 10次并求结果的平均值
+    numTests=10;errorSum=0.0
+    for k in range(numTests):
+        errorSum+=colicTest()
+    print "after %d iterations the  average error rate is: %f" % (numTests,errorSum/float(numTests))
+
+
